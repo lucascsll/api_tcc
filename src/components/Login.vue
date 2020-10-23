@@ -23,7 +23,7 @@
       <b-col v-if="login==false && loginSucesso==false" sm="12" class="container" >
        
         <b-col class="text-left" >
-          <label style="color:#ffff;font-size:22px;margin-top:50px"> Cadrasto </label>
+          <label style="color:#ffff;font-size:22px;margin-top:50px"> Cadastro </label>
         </b-col>
         <b-col >
           <b-form-input class="input-login" v-model="email"  placeholder="Digite seu e-mail"></b-form-input>
@@ -135,7 +135,7 @@ export default {
       if(this.email.includes('@')  ==false || this.email.includes('.')==false){
         return this.alertaError='Por favor ensira um email valido'
       }else{
-        axios.post('http://localhost:3333/users',{
+        axios.post('https://apitcclivros.herokuapp.com/users',{
           
             email:this.email,
             password:this.senha
@@ -167,14 +167,13 @@ export default {
         })
           .then(value => {
             this.boxTwo = value
-            console.log(value)
           })
           .catch(err => {
             // An error occurred
           })
       },
       loginUser(){
-        axios.post('http://localhost:3333/sessions',{
+        axios.post('https://apitcclivros.herokuapp.com/sessions',{
           
             email:this.emailLogin,
             password:this.senhaLogin
@@ -191,12 +190,36 @@ export default {
       avaliarLivros(){
         console.log(this.livroSelecionado)
         if(this.livroSelecionado.length==1){
-           axios.post('http://localhost:3333/quiz',{
+           axios.post('https://apitcclivros.herokuapp.com/quiz',{
             	id_usuario:this.idUSer,
 	           id_livro:this.livroSelecionado[0].bookId,
           	nome_livro:this.livroSelecionado[0].title,
             rating:this.rating,
             authorization: 'Bearer '+this.token
+           }).then(resp=>{
+             if(resp.status==200){
+               this.rating=0
+               this.searchLivros=''
+               this.livroSelecionado=[]
+               this.resultData=null
+                this.boxTwo = ''
+        this.$bvModal.msgBoxOk('Avaliação enviada com sucesso!', {
+          title: 'Obrigado por contribuir com sua avaliação!',
+          size: 'sm',
+          buttonSize: 'sm',
+          okVariant: 'success',
+          headerClass: 'p-2 border-bottom-0',
+          footerClass: 'p-2 border-top-0',
+          centered: true
+        })
+          .then(value => {
+            this.boxTwo = value
+          })
+          .catch(err => {
+            // An error occurred
+          })
+
+             }
            })
         }
 
