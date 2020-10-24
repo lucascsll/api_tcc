@@ -135,7 +135,7 @@ export default {
       }else{
         axios.post('https://apitcclivros.herokuapp.com/users',{
           
-            email:JSON.stringify(this.email.toLowerCase()),
+            email:this.email.toLowerCase(),
             password:this.senha
         
         }).then(resp=>{
@@ -173,7 +173,7 @@ export default {
       loginUser(){
         axios.post('https://apitcclivros.herokuapp.com/sessions',{
           
-            email:JSON.stringify(this.emailLogin.toLowerCase()),
+            email:this.emailLogin.toLowerCase(),
             password:this.senhaLogin
         
         }).then(resp=>{
