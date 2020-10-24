@@ -6,9 +6,10 @@
         <label style="color:#ffff;font-size:22px;margin-top:50px"> Login </label>
       </b-col>
       <b-col >
-         <b-form-input v-model="emailLogin" class="input-login"  placeholder="Digite seu e-mail"></b-form-input>
-         <b-form-input v-model="senhaLogin"   placeholder="Digite sua senha"></b-form-input>
+         <b-form-input v-model="emailLogin"  class="input-login"  placeholder="Digite seu e-mail"></b-form-input>
+         <b-form-input v-model="senhaLogin" type="password"   placeholder="Digite sua senha"></b-form-input>
       </b-col>
+      <b-col class="text-left"><label style="color:red;font-size:18px;font-weight:bold"> {{alertaError}} </label> </b-col>
       <b-col class="text-center">
         <b-button @click="loginUser" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>ENTRAR </strong> </b-button>
       </b-col>
@@ -92,22 +93,19 @@ export default {
       resultData:null,
       livroSelecionado:[],
       rating:0,
-      email:'',
+      email:''.toLowerCase(),
       senha:'',
       confirmarSenha:'',
       alertaError:'',
       boxOne: '',
       boxTwo: '',
-      emailLogin:'',
+      emailLogin:''.toLowerCase(),
       senhaLogin:'',
       token:'',
       idUSer:null
     }
   },
   methods:{
-    teste(){
-      console.log('teste')
-    },
     async procurarLivros(){
      await axios.get(`https://cors-anywhere.herokuapp.com/https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
         this.resultData=resp.data
@@ -119,12 +117,12 @@ export default {
       this.livroSelecionado.push(livro)
       }     
     },
-    createUser(){
+    async createUser(){
       if(!this.email){
         return this.alertaError='Por favor ensira um email'
       }
       if(!this.senha){
-        return this.alertaError='Por favor ensira uma senha'
+        return this.alertaError='Por favor insira uma senha'
       }
       if(!this.confirmarSenha){
         return this.alertaError='Por favor confirme a senha'
@@ -137,7 +135,7 @@ export default {
       }else{
         axios.post('https://apitcclivros.herokuapp.com/users',{
           
-            email:this.email,
+            email:JSON.stringify(this.email.toLowerCase()),
             password:this.senha
         
         }).then(resp=>{
@@ -175,20 +173,29 @@ export default {
       loginUser(){
         axios.post('https://apitcclivros.herokuapp.com/sessions',{
           
-            email:this.emailLogin,
+            email:JSON.stringify(this.emailLogin.toLowerCase()),
             password:this.senhaLogin
         
         }).then(resp=>{
-          if(resp.data.token){
+          if(resp.status==200){
+             if(resp.data.token){
             this.token=resp.data.token
             this.login=false
             this.loginSucesso=true
             this.idUSer=resp.data.user.id
+           }
           }
+
+          if(resp.data.error=='Senha incorreta'){
+            return this.alertaError='Senha incorreta!'
+          }
+          if(resp.data.error=='Email não cadastrado'){
+            return this.alertaError='Email não cadastrado !'
+          }
+         
         })
       },
       avaliarLivros(){
-        console.log(this.livroSelecionado)
         if(this.livroSelecionado.length==1){
            axios.post('https://apitcclivros.herokuapp.com/quiz',{
             	id_usuario:this.idUSer,
