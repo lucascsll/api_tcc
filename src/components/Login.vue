@@ -26,10 +26,10 @@
         <b-col class="text-left" >
           <label style="color:#ffff;font-size:22px;margin-top:50px"> Cadastro </label>
         </b-col>
-        <b-col >
+        <b-col cols="12" >
           <b-form-input class="input-login" v-model="email"  placeholder="Digite seu e-mail"></b-form-input>
-          <b-form-input class="input-login" v-model="senha"   placeholder="Digite sua senha"></b-form-input>
-          <b-form-input  v-model="confirmarSenha"  placeholder="Confirmar senha"></b-form-input>
+          <b-form-input :type="esconder==false?'password':'text'" class="input-login" v-model="senha"   placeholder="Digite sua senha"></b-form-input>
+          <b-form-input :type="esconder==false?'password':'text'"  v-model="confirmarSenha"  placeholder="Confirmar senha"></b-form-input>
           <b-col class="text-left"><label style="color:red;font-size:18px;font-weight:bold"> {{alertaError}} </label> </b-col>
           
         </b-col>
@@ -46,7 +46,7 @@
         <label style="color:#ffff;font-size:22px;margin-top:50px"> Avaliar</label>
       </b-col>
       <b-col >
-         <b-form-input v-model="searchLivros" @keypress="procurarLivros" class="input-login"  placeholder="Procurar livros"></b-form-input>
+         <b-form-input type="text" v-model="searchLivros" @keypress="procurarLivros" class="input-login"  placeholder="Procurar livros"></b-form-input>
 
          <b-list-group v-if="livroSelecionado.length==0"  class="text-left">
             <b-list-group-item @click="selecionar(livro)" class="select" v-for="livro in resultData" ><img width="30" height="30" :src="livro.imageUrl"> {{livro.bookTitleBare}}</b-list-group-item>
@@ -61,7 +61,9 @@
       </b-col>
       <b-col class="text-center">
         <b-button @click="avaliarLivros" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>Salvar </strong> </b-button>
+        <b-button @click="sair" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px;margin-left:30px" ><strong>Voltar </strong> </b-button>
       </b-col>
+      
     
        
     </b-col>
@@ -102,7 +104,8 @@ export default {
       emailLogin:''.toLowerCase(),
       senhaLogin:'',
       token:'',
-      idUSer:null
+      idUSer:null,
+      esconder:false
     }
   },
   methods:{
@@ -129,6 +132,15 @@ export default {
       }
       if(this.confirmarSenha != this.senha){
         return this.alertaError='Por favor ensira uma senha corresponde a primeira'
+      }
+      if(!this.email.includes(' ')==false){
+        return this.alertaError='Não e permitido espaços vazios no email'
+      }
+      if(!this.senha.includes(' ')==false){
+        return this.alertaError='Não e permitido espaços vazios na senha'
+      }
+      if(!this.confirmarSenha.includes(' ')==false){
+        return this.alertaError='Não e permitido espaços vazios na segunda senha'
       }
       if(this.email.includes('@')  ==false || this.email.includes('.')==false){
         return this.alertaError='Por favor ensira um email valido'
@@ -229,6 +241,23 @@ export default {
              }
            })
         }
+
+      },
+      esconderSenha(){
+        if(this.esconder==true){
+          this.esconder=false
+        }else{
+          this.esconder=true
+        }
+      },
+      sair(){
+        this.login=true
+        this.loginSucesso=false
+        this.emailLogin=''
+        this.senhaLogin=''
+        this.resultData=null
+        this.livroSelecionado=[]
+        this.alertaError=''
 
       }
   }
