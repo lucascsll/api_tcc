@@ -49,11 +49,8 @@
       </b-col>
       <b-col >
         <b-row>
-          <b-col cols="9" style="padding:0">
-          <b-form-input id='searchLivros' autocomplete="off" type="text" v-model="searchLivros"  class="input-login"  placeholder="Procurar livros"></b-form-input>
-        </b-col>
-        <b-col style="padding:0" cols="1">
-        <b-button @click="procurarLivros" style="background-color:#9A9CD6;" ><strong>Buscar</strong> </b-button>
+          <b-col cols="12" style="padding:0">
+          <b-form-input id='searchLivros' autocomplete="off" type="text" @input="procurarLivros" v-model="searchLivros"  class="input-login"  placeholder="Procurar livros"></b-form-input>
         </b-col>
         </b-row>
         
@@ -131,7 +128,9 @@ export default {
       if(this.searchLivros.length>1){
           this.buscandoLivro=true
           this.alertaError=''
-     await axios.get(`https://cors-anywhere.herokuapp.com/https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
+     await axios.post(`https://apitcclivros.herokuapp.com/buscarLivros`,{
+       pesquisarLivros:this.searchLivros
+     }).then(resp=>{
         this.resultData=resp.data
         this.buscandoLivro=false
         console.log(this.livroSelecionado.length)
