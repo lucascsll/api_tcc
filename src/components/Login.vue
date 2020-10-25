@@ -6,13 +6,14 @@
         <label style="color:#ffff;font-size:22px;margin-top:50px"> Login </label>
       </b-col>
       <b-col >
-         <b-form-input v-model="emailLogin"  class="input-login"  placeholder="Digite seu e-mail"></b-form-input>
+         <b-form-input v-model="emailLogin" type="email" class="input-login"  placeholder="Digite seu e-mail"></b-form-input>
          <b-form-input v-model="senhaLogin" type="password"   placeholder="Digite sua senha"></b-form-input>
       </b-col>
       <b-col class="text-left"><label style="color:red;font-size:18px;font-weight:bold"> {{alertaError}} </label> </b-col>
-      <b-col class="text-center">
+      <b-col v-if="callLogin==false" class="text-center">
         <b-button @click="loginUser" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>ENTRAR </strong> </b-button>
       </b-col>
+      <b-spinner v-if="callLogin==true" variant="primary" label="Spinning"></b-spinner>
       <b-col class="text-center">
         <label style="color:#ffff"> Não possui cadastro? <strong @click="login=false" style="color:#9A9CD6;"> Cadastre-se </strong> </label>
       </b-col>
@@ -27,16 +28,17 @@
           <label style="color:#ffff;font-size:22px;margin-top:50px"> Cadastro </label>
         </b-col>
         <b-col cols="12" >
-          <b-form-input class="input-login" v-model="email"  placeholder="Digite seu e-mail"></b-form-input>
+          <b-form-input type="email" class="input-login" v-model="email"  placeholder="Digite seu e-mail"></b-form-input>
           <b-form-input :type="esconder==false?'password':'text'" class="input-login" v-model="senha"   placeholder="Digite sua senha"></b-form-input>
           <b-form-input :type="esconder==false?'password':'text'"  v-model="confirmarSenha"  placeholder="Confirmar senha"></b-form-input>
           <b-col class="text-left"><label style="color:red;font-size:18px;font-weight:bold"> {{alertaError}} </label> </b-col>
           
         </b-col>
-        <b-col class="text-center">
+        <b-col v-if="callCadastro==false" class="text-center">
           <b-button @click="createUser" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>CADASTRAR </strong> </b-button>
           <b-button @click="login=true" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px;margin-left:5px" ><strong>CANCELAR </strong> </b-button>
         </b-col>
+        <b-spinner v-if="callCadastro==true"  variant="primary" label="Spinning"></b-spinner>
       </b-col>
 
 
@@ -46,7 +48,8 @@
         <label style="color:#ffff;font-size:22px;margin-top:50px"> Avaliar</label>
       </b-col>
       <b-col >
-         <b-form-input type="text" v-model="searchLivros" @keypress="procurarLivros" class="input-login"  placeholder="Procurar livros"></b-form-input>
+         <b-form-input autocomplete="off" type="text" v-model="searchLivros" @input="procurarLivros" class="input-login"  placeholder="Procurar livros"></b-form-input>
+         <b-spinner v-if="buscandoLivro==true" variant="primary" label="Spinning"></b-spinner>
 
          <b-list-group v-if="livroSelecionado.length==0"  class="text-left">
             <b-list-group-item @click="selecionar(livro)" class="select" v-for="livro in resultData" ><img width="30" height="30" :src="livro.imageUrl"> {{livro.bookTitleBare}}</b-list-group-item>
@@ -60,7 +63,7 @@
     
       </b-col>
       <b-col class="text-center">
-        <b-button @click="avaliarLivros" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>Salvar </strong> </b-button>
+        <b-button :disabled="this.livroSelecionado.length==0" @click="avaliarLivros" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>Salvar </strong> </b-button>
         <b-button @click="sair" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px;margin-left:30px" ><strong>Voltar </strong> </b-button>
       </b-col>
       
@@ -105,13 +108,18 @@ export default {
       senhaLogin:'',
       token:'',
       idUSer:null,
-      esconder:false
+      esconder:false,
+      callLogin:false,
+      buscandoLivro:false,
+      callCadastro:false
     }
   },
   methods:{
     async procurarLivros(){
+      this.buscandoLivro=true
      await axios.get(`https://cors-anywhere.herokuapp.com/https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
         this.resultData=resp.data
+        this.buscandoLivro=false
         console.log(this.livroSelecionado.length)
       })
     },
@@ -121,6 +129,7 @@ export default {
       }     
     },
     async createUser(){
+        let regex = /[^a-zA-Z0-9]/
       if(!this.email){
         return this.alertaError='Por favor ensira um email'
       }
@@ -129,6 +138,12 @@ export default {
       }
       if(!this.confirmarSenha){
         return this.alertaError='Por favor confirme a senha'
+      }
+       if(regex.test(this.senha)==true){
+        return this.alertaError='Não é permitido caracteres especiais no campo senha'
+      }
+        if(this.senha.length<=5){
+        return this.alertaError='Por favor digite uma senha de no mínimo de 6 caracteres'
       }
       if(this.confirmarSenha != this.senha){
         return this.alertaError='Por favor ensira uma senha corresponde a primeira'
@@ -145,12 +160,14 @@ export default {
       if(this.email.includes('@')  ==false || this.email.includes('.')==false){
         return this.alertaError='Por favor ensira um email valido'
       }else{
+        this.callCadastro=true
         axios.post('https://apitcclivros.herokuapp.com/users',{
           
             email:this.email.toLowerCase(),
             password:this.senha
         
         }).then(resp=>{
+          this.callCadastro=false
           if(resp.data.status==false){
             return this.alertaError='Email já cadastrado'
           }else{
@@ -183,12 +200,14 @@ export default {
           })
       },
       loginUser(){
+        this.callLogin=true
         axios.post('https://apitcclivros.herokuapp.com/sessions',{
           
             email:this.emailLogin.toLowerCase(),
             password:this.senhaLogin
         
         }).then(resp=>{
+          this.callLogin=false
           if(resp.status==200){
              if(resp.data.token){
             this.token=resp.data.token
