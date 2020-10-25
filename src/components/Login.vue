@@ -245,11 +245,8 @@ export default {
               window.document.getElementById('searchLivros').focus()
               return this.alertaError='Não e possivel avaliar o mesmo livro duas vezes.'
 
-            }
-
-          
-
-             if(resp.status==200){
+            }else{
+                if(resp.status==200){
                this.rating=0
                this.searchLivros=''
                this.livroSelecionado=[]
@@ -272,6 +269,12 @@ export default {
           })
 
              }
+
+            }
+
+          
+
+           
            })
         }
 
