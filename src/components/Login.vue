@@ -118,7 +118,7 @@ export default {
   methods:{
     async procurarLivros(){
       this.buscandoLivro=true
-     await axios.get(`https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
+     await axios.get(`https://cors-anywhere.herokuapp.com/https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
         this.resultData=resp.data
         this.buscandoLivro=false
         console.log(this.livroSelecionado.length)
@@ -246,7 +246,7 @@ export default {
               return this.alertaError='Não e possivel avaliar o mesmo livro duas vezes.'
 
             }else{
-                if(resp.status==200){
+                  if(resp.status==200){
                this.rating=0
                this.searchLivros=''
                this.livroSelecionado=[]
@@ -272,9 +272,11 @@ export default {
 
             }
 
-          
+            
 
-           
+
+
+         
            })
         }
 
