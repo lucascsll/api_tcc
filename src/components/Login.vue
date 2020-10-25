@@ -48,7 +48,7 @@
         <label style="color:#ffff;font-size:22px;margin-top:50px"> Avaliar</label>
       </b-col>
       <b-col >
-         <b-form-input autocomplete="off" type="text" v-model="searchLivros" @input="procurarLivros" class="input-login"  placeholder="Procurar livros"></b-form-input>
+         <b-form-input id='searchLivros' autocomplete="off" type="text" v-model="searchLivros" @input="procurarLivros" class="input-login"  placeholder="Procurar livros"></b-form-input>
          <b-spinner v-if="buscandoLivro==true" variant="primary" label="Spinning"></b-spinner>
 
          <b-list-group v-if="livroSelecionado.length==0"  class="text-left">
@@ -60,6 +60,7 @@
           </b-list-group>
 
          <b-form-rating variant = "warning" style="margin-top:40px" v-if="this.livroSelecionado.length==1" v-model="rating"></b-form-rating>
+         <b-col class="text-left"><label style="color:red;font-size:18px;font-weight:bold"> {{alertaError}} </label> </b-col>
     
       </b-col>
       <b-col class="text-center">
@@ -117,7 +118,7 @@ export default {
   methods:{
     async procurarLivros(){
       this.buscandoLivro=true
-     await axios.get(`https://cors-anywhere.herokuapp.com/https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
+     await axios.get(`https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
         this.resultData=resp.data
         this.buscandoLivro=false
         console.log(this.livroSelecionado.length)
@@ -235,6 +236,19 @@ export default {
             rating:this.rating,
             authorization: 'Bearer '+this.token
            }).then(resp=>{
+            
+
+            if(resp.data.status==false && resp.data.error=='Esse livro já foi avaliado.'){
+              this.resultData=null
+              this.livroSelecionado=[]
+              this.searchLivros=''
+              window.document.getElementById('searchLivros').focus()
+              return this.alertaError='Não e possivel avaliar o mesmo livro duas vezes.'
+
+            }
+
+          
+
              if(resp.status==200){
                this.rating=0
                this.searchLivros=''
