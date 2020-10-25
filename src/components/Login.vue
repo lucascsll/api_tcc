@@ -48,7 +48,16 @@
         <label style="color:#ffff;font-size:22px;margin-top:50px"> Avaliar</label>
       </b-col>
       <b-col >
-         <b-form-input id='searchLivros' autocomplete="off" type="text" v-model="searchLivros" @input="procurarLivros" class="input-login"  placeholder="Procurar livros"></b-form-input>
+        <b-row>
+          <b-col cols="9" style="padding:0">
+          <b-form-input id='searchLivros' autocomplete="off" type="text" v-model="searchLivros"  class="input-login"  placeholder="Procurar livros"></b-form-input>
+        </b-col>
+        <b-col style="padding:0" cols="1">
+        <b-button @click="procurarLivros" style="background-color:#9A9CD6;" ><strong>Buscar</strong> </b-button>
+        </b-col>
+        </b-row>
+        
+        
          <b-spinner v-if="buscandoLivro==true" variant="primary" label="Spinning"></b-spinner>
 
          <b-list-group v-if="livroSelecionado.length==0"  class="text-left">
@@ -60,13 +69,14 @@
           </b-list-group>
 
          <b-form-rating variant = "warning" style="margin-top:40px" v-if="this.livroSelecionado.length==1" v-model="rating"></b-form-rating>
-         <b-col class="text-left"><label style="color:red;font-size:18px;font-weight:bold"> {{alertaError}} </label> </b-col>
+         <b-col class="text-left" style="padding:0"><label style="color:red;font-size:18px;font-weight:bold"> {{alertaError}} </label> </b-col>
     
       </b-col>
-      <b-col class="text-center">
+      <b-col class="text-center" v-if="SalvandoLivro==false">
         <b-button :disabled="this.livroSelecionado.length==0" @click="avaliarLivros" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>Salvar </strong> </b-button>
         <b-button @click="sair" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px;margin-left:30px" ><strong>Voltar </strong> </b-button>
       </b-col>
+      <b-spinner v-if="SalvandoLivro==true" variant="primary" label="Spinning"></b-spinner>
       
     
        
@@ -112,17 +122,23 @@ export default {
       esconder:false,
       callLogin:false,
       buscandoLivro:false,
-      callCadastro:false
+      callCadastro:false,
+      SalvandoLivro:false
     }
   },
   methods:{
     async procurarLivros(){
-      this.buscandoLivro=true
+      if(this.searchLivros.length>1){
+          this.buscandoLivro=true
+          this.alertaError=''
      await axios.get(`https://cors-anywhere.herokuapp.com/https://www.goodreads.com/book/auto_complete?format=json&q=${this.searchLivros}`).then(resp=>{
         this.resultData=resp.data
         this.buscandoLivro=false
         console.log(this.livroSelecionado.length)
       })
+
+      }
+    
     },
     selecionar(livro){
       if(this.livroSelecionado.length==0){
@@ -229,19 +245,23 @@ export default {
       },
       avaliarLivros(){
         if(this.livroSelecionado.length==1){
-           axios.post('https://apitcclivros.herokuapp.com/quiz',{
+          this.SalvandoLivro=true
+          this.alertaError=''
+
+          try {
+              axios.post('https://apitcclivros.herokuapp.com/quiz',{
             	id_usuario:this.idUSer,
 	           id_livro:this.livroSelecionado[0].bookId,
           	nome_livro:this.livroSelecionado[0].title,
             rating:this.rating,
             authorization: 'Bearer '+this.token
            }).then(resp=>{
-            
-
-            if(resp.data.status==false && resp.data.error=='Esse livro já foi avaliado.'){
+            if(resp.data.status==false && resp.data.error=='Esse livro já foi avaliado'){
               this.resultData=null
               this.livroSelecionado=[]
               this.searchLivros=''
+              this.SalvandoLivro=false
+              this.rating=0
               window.document.getElementById('searchLivros').focus()
               return this.alertaError='Não e possivel avaliar o mesmo livro duas vezes.'
 
@@ -252,6 +272,7 @@ export default {
                this.livroSelecionado=[]
                this.resultData=null
                 this.boxTwo = ''
+                this.SalvandoLivro=false
         this.$bvModal.msgBoxOk('Avaliação enviada com sucesso!', {
           title: 'Obrigado por contribuir com sua avaliação!',
           size: 'sm',
@@ -271,13 +292,15 @@ export default {
              }
 
             }
-
-            
-
-
-
          
            })
+            
+          } catch (error) {
+          
+            
+          }
+          
+         
         }
 
       },
