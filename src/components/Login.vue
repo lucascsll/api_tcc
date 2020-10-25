@@ -74,7 +74,7 @@
       </b-col>
       <b-col class="text-center" v-if="SalvandoLivro==false">
         <b-button :disabled="this.livroSelecionado.length==0" @click="avaliarLivros" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px" ><strong>Salvar </strong> </b-button>
-        <b-button @click="sair" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px;margin-left:30px" ><strong>Voltar </strong> </b-button>
+        <b-button @click="sair" style="background-color:#9A9CD6;margin-bottom:30px;margin-top:50px;margin-left:30px" ><strong>Sair </strong> </b-button>
       </b-col>
       <b-spinner v-if="SalvandoLivro==true" variant="primary" label="Spinning"></b-spinner>
       
